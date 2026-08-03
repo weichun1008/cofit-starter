@@ -1,0 +1,5 @@
+# Default ownership. Adjust when the Cofit team confirms maintainers.
+* @Cofit/engineering
+
+/docs/ @Cofit/engineering
+/src/app/lib/ @Cofit/engineering

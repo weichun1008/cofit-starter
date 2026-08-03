@@ -2,6 +2,12 @@
 
 從 supplement-tracker 抽出的**平台底座**，給未來新專案當起手式，省下重接 auth / DB / LINE / AI 的時間。
 
+## 定位
+
+這個 repo 是 Cofit 的**輕量 starter**：保留好上手、快速開始、可直接複製的特性，不預設升級成重型 monorepo。
+
+若下游專案需要獨立後端、worker、shared schema、e2e release gate，再使用 `create-cofit-repo` 建 full-stack monorepo。
+
 ## 內含底座（chassis）
 | 能力 | 檔案 |
 |---|---|
@@ -19,6 +25,17 @@
 ## 🔑 開新專案只要改 `src/app/lib/config.js`
 App 名稱、底部導覽列、路由↔LIFF 對應，全集中在這一個檔。
 
+## 工程治理
+
+這版 starter 融入 `create-cofit-repo` 的輕量治理：
+
+- `CLAUDE.md` / `AGENTS.md` / `GEMINI.md`：AI 協作規範同源
+- `.github/`：PR template、issue templates、CODEOWNERS
+- `docs/`：Diátaxis 文件結構
+- `.nvmrc` / `.node-version`：Node 24
+- `.editorconfig` / `.prettierrc`：格式一致
+- `docs/reference/ci-workflow-template.yml`：GitHub Actions CI 模板
+
 ## 快速開始
 ```bash
 cp .env.example .env.local   # 全留空也能跑（記憶體模式）
@@ -35,8 +52,17 @@ cd my-new-app && npm install
 ```
 然後：
 1. 改 `src/app/lib/config.js`（App 名、導覽、LIFF）。
-2. 照 `docs/MODULE_GUIDE.md` 複製 `example` 模組做你的功能。
+2. 照 `docs/MODULE_GUIDE.md` 或 `docs/how-to/add-a-module.md` 複製 `example` 模組做你的功能。
 3. 填 `.env.local`，部署，打 `/api/setup`。
+
+## 驗證
+
+```bash
+npm run lint
+npm run type-check
+npm test
+npm run build
+```
 
 ## 環境變數
 見 `.env.example`。全部選填——缺哪個，對應功能就自動停用（不會炸）。
