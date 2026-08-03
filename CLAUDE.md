@@ -23,12 +23,28 @@ This file is the source of truth for Claude Code / Gemini CLI / Codex when worki
 
 New feature equals:
 
-1. A page under `src/app/(services)/<module>`.
+1. A page under `src/app/(services)/<module>`, with `schema.js`, `error.js`, and
+   `loading.js` alongside it.
 2. Matching API routes under `src/app/api/<resource>`.
 3. Domain table and CRUD helpers in `src/app/lib/db.js`.
 4. i18n entries in `src/app/lib/i18n/*.json`.
 5. Module registration in `src/app/api/setup/route.js`.
 6. Navigation / LIFF config in `src/app/lib/config.js`.
+
+## API Route Rules
+
+- Validate every request body with a zod schema from the module's `schema.js`.
+  Never trust an unvalidated `await request.json()`.
+- Keep one schema per domain shared by the API and the form, so validation rules
+  cannot drift apart.
+- Wrap handlers in `try/catch` and return `toErrorResponse(error)` from
+  `src/app/lib/apiError.js`. Do not hand-roll status codes for auth or validation errors.
+- Pick the right identity helper from `src/app/lib/userId.js`:
+  - `getUserId()` is lenient and always returns an ID. Demos and prototypes only.
+  - `getAuthenticatedUserId()` only trusts a verified JWT. Required for any route
+    that stores real user data.
+  - The lenient helper cannot distinguish a real login from a client-supplied ID.
+    Treating it as an identity guard is how you ship an IDOR hole.
 
 ## Documentation Rules
 
@@ -44,8 +60,16 @@ Update documentation when changing related behavior:
 
 ## Engineering Rules
 
-- Run `npm run lint` and `npm run build` before claiming code is verified.
-- This starter intentionally uses npm + JavaScript for lower setup friction.
+- Run `npm run lint`, `npm test`, and `npm run build` before claiming code is verified.
+  CI runs the same three on every PR.
+- This starter intentionally uses npm + JavaScript for lower setup friction. There is
+  no TypeScript and no `type-check` script — do not add a placeholder script that
+  always exits 0, because CI would then report a green check for work it never did.
+- Tests are required for the chassis (`src/app/lib/*`) and optional for domain modules.
+  A chassis bug is inherited by every downstream project; module code is throwaway
+  prototype work and should stay fast to write.
+- The chassis data layer has two paths (in-memory and Postgres). Any change to one
+  must keep the other behaviorally identical, and needs a test in `test/db.test.js`.
 - Promote a downstream project to `create-cofit-repo` monorepo only when it needs independent backend, worker, shared packages, or e2e release gates.
 
 ## Git Rules
