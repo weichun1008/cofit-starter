@@ -233,15 +233,24 @@ export async function createItem(userId, data) {
   return rows[0];
 }
 
+// PATCH 語意：只覆寫「有給」的欄位，undefined 代表不動。
+// 記憶體與 SQL 兩條路必須行為一致 —— 這是雙路徑資料層最容易出現分歧的地方，
+// 有測試守著（見 test/db.test.js）。
+// 已知限制：COALESCE 無法把欄位「明確設成 null」，要清空欄位請傳空字串。
 export async function updateItem(userId, id, data) {
   if (isLocalMode()) {
-    const it = memoryStore.items.find((i) => i.id === id && i.user_id === userId);
+    const it = memoryStore.items.find((i) => Number(i.id) === Number(id) && i.user_id === userId);
     if (!it) return null;
-    Object.assign(it, { title: data.title, note: data.note || null, updated_at: new Date().toISOString() });
+    if (data.title !== undefined) it.title = data.title;
+    if (data.note !== undefined) it.note = data.note;
+    it.updated_at = new Date().toISOString();
     return it;
   }
   const rows = await getDb()`
-    UPDATE items SET title = ${data.title}, note = ${data.note || null}, updated_at = NOW()
+    UPDATE items SET
+      title = COALESCE(${data.title ?? null}, title),
+      note = COALESCE(${data.note ?? null}, note),
+      updated_at = NOW()
     WHERE id = ${id} AND user_id = ${userId} RETURNING *
   `;
   return rows[0] || null;
@@ -249,7 +258,9 @@ export async function updateItem(userId, id, data) {
 
 export async function deleteItem(userId, id) {
   if (isLocalMode()) {
-    memoryStore.items = memoryStore.items.filter((i) => !(i.id === id && i.user_id === userId));
+    memoryStore.items = memoryStore.items.filter(
+      (i) => !(Number(i.id) === Number(id) && i.user_id === userId),
+    );
     return { success: true };
   }
   await getDb()`DELETE FROM items WHERE id = ${id} AND user_id = ${userId}`;
