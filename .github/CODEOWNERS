@@ -1,5 +1,8 @@
-# Default ownership. Adjust when the Cofit team confirms maintainers.
-* @Cofit/engineering
+# 這個 repo 在個人帳號底下（public，讓沒有 Cofit org 權限的同事也能直接取用），
+# 因此 CODEOWNERS 不能引用 org team（如 @Cofit/engineering）—— 會被 GitHub 視為無效。
+# 若日後 repo transfer 到 Cofit org，再改回 team。
+* @weichun1008
 
-/docs/ @Cofit/engineering
-/src/app/lib/ @Cofit/engineering
+# 底座（chassis）改動影響所有衍生專案，優先要 review。
+/src/app/lib/ @weichun1008
+/docs/ @weichun1008
