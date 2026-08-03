@@ -1,24 +1,18 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifyToken, clearAuthCookie } from '@/app/lib/auth';
+import { clearAuthCookie } from '@/app/lib/auth';
+import { getAuthenticatedUserId } from '@/app/lib/userId';
 import { initializeDatabase, findUserById, findOrCreateLineUser } from '@/app/lib/db';
 
 export async function GET() {
     try {
         await initializeDatabase();
-        const cookieStore = await cookies();
-        const token = cookieStore.get('auth_token')?.value;
 
-        if (!token) {
-            return NextResponse.json({ authenticated: false }, { status: 401 });
-        }
+        // 嚴格身份解析：沒有 / 驗不過 JWT 都會 throw UnauthorizedError，落到下方 catch。
+        // 這個端點刻意回 { authenticated: false } 而不是 toErrorResponse() 的通用格式，
+        // 因為 AuthProvider 讀的是 authenticated 欄位。
+        const userId = await getAuthenticatedUserId();
 
-        const payload = await verifyToken(token);
-        if (!payload?.userId) {
-            return NextResponse.json({ authenticated: false }, { status: 401 });
-        }
-
-        const user = await findUserById(payload.userId);
+        const user = await findUserById(userId);
         if (!user) {
             return NextResponse.json({ authenticated: false }, { status: 401 });
         }

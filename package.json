@@ -8,8 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "type-check": "node -e \"console.log('JavaScript starter: no TypeScript type-check configured')\"",
-    "test": "node -e \"console.log('No automated tests yet')\""
+    "test": "node --test \"test/**/*.test.js\""
   },
   "dependencies": {
     "@line/bot-sdk": "^10.6.0",
@@ -20,7 +19,8 @@
     "lucide-react": "^0.460.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "eslint": "^9",
